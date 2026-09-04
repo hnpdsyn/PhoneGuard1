@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path name="logs" path="logs/" />
+    <files-path name="photos" path="photos/" />
+    <files-path name="adb_photos" path="adb_photos/" />
+    <files-path name="lock_photos" path="lock_photos/" />
+    <external-files-path name="external_logs" path="logs/" />
+    <external-files-path name="external_photos" path="photos/" />
+    <external-files-path name="external_adb_photos" path="adb_photos/" />
+    <external-files-path name="external_lock_photos" path="lock_photos/" />
+</paths>

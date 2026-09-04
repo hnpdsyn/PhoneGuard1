@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">手机防火墙</string>
+    <string name="channel_app_lock">应用锁</string>
+    <string name="channel_adb_guard">ADB防护</string>
+    <string name="channel_intrusion">入侵检测</string>
+    <string name="channel_sim_guard">SIM卡防护</string>
+    <string name="channel_login_guard">登录防护</string>
+    <string name="channel_general">安全通知</string>
+    <string name="accessibility_service_description">用于实时检测前台应用变化，为受保护应用提供锁定功能</string>
+</resources>
