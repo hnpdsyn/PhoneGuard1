@@ -80,6 +80,6 @@ cd PhoneGuard
 
 如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
 
-![微信收款码](donate_qrcode.png)
+![微信收款码](mm_facetoface_collect_qrcode_1788576523958.png)
 
 **如果觉得有用，欢迎 ⭐ Star 支持！**
