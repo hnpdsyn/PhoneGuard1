@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 前台服务（保活） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 开机自启 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- 密码错误拍照取证 -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- 摄像头特性声明 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
+
+    <application
+        android:name=".AppLockApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppLock"
+        tools:targetApi="34">
+
+        <!-- 主Activity（桌面入口由下方 activity-alias 承担，用于图标伪装） -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppLock" />
+
+        <!-- 真实入口 alias（默认启用） -->
+        <activity-alias
+            android:name=".MainAlias"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 伪装入口 alias：计算器（默认禁用） -->
+        <activity-alias
+            android:name=".DisguiseCalcAlias"
+            android:targetActivity=".ui.DisguiseActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_disguise_calculator"
+            android:roundIcon="@mipmap/ic_disguise_calculator"
+            android:label="@string/disguise_label_calculator">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 伪装入口 alias：备忘录（默认禁用） -->
+        <activity-alias
+            android:name=".DisguiseNoteAlias"
+            android:targetActivity=".ui.DisguiseActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_disguise_notes"
+            android:roundIcon="@mipmap/ic_disguise_notes"
+            android:label="@string/disguise_label_notes">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 伪装界面Activity（计算器/备忘录，仅由伪装 alias 启动） -->
+        <activity
+            android:name=".ui.DisguiseActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppLock" />
+
+        <!-- 隐私保险箱Activity（不对外导出） -->
+        <activity
+            android:name=".vault.VaultActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppLock" />
+
+        <!-- 应用锁验证Activity（透明主题） -->
+        <activity
+            android:name=".ui.LockVerifyActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/Theme.AppLock.Transparent"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
+        <!-- 应用锁前台服务（保活） -->
+        <service
+            android:name=".service.AppLockService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="app_lock_monitoring" />
+        </service>
+
+        <!-- 应用锁无障碍服务 -->
+        <service
+            android:name=".service.AppLockAccessibilityService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- 开机自启 -->
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

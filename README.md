@@ -18,6 +18,21 @@
 | 📡 **SIM 卡防护** | 检测 SIM 卡更换，发送告警通知 |
 | 📋 **安全日志** | 全量安全事件记录，可导出查看 |
 
+## 🧩 独立精简版（单功能拆分）
+
+PhoneGuard 已按功能拆分为 6 个独立 App，每个都是完整可编译的独立工程：包名独立、可同机共存、互不依赖，按需取用。
+
+| App | 核心功能 | 工程路径 | 版本 |
+|-----|---------|---------|------|
+| 🔐 **AppLock 应用锁大师** | 应用锁 + 图标伪装 + 隐私保险箱 + 假崩溃 | `apps/AppLock/` | v1.1 |
+| 🛡️ **AdbGuard ADB防火墙** | ADB/USB 监听 + 连拍取证 + TTS 语音告警 | `apps/AdbGuard/` | v1.1 |
+| 🔑 **LoginGuard 登录保护** | 设备管理器锁机 + 静默拍照 + 事件时间线 | `apps/LoginGuard/` | v1.1 |
+| 🚨 **Intrusion 入侵卫士** | 锁屏失败拍照取证 + 定位 + 警报 | `apps/Intrusion/` | v1.0 |
+| 📡 **SimGuard SIM卡卫士** | SIM 卡更换检测 + 告警通知 | `apps/SimGuard/` | v1.0 |
+| 📋 **SecurityLog 安全日志** | 全量安全事件记录与导出 | `apps/SecurityLog/` | v1.0 |
+
+> 📦 各独立版 APK 打包文件见 [Releases](https://github.com/hnpdsyn/PhoneGuard1/releases)，源码在 `apps/` 对应目录，均带 `build_apk.bat` Windows 一键打包脚本。
+
 ## 截图
 
 | 首页 | 应用锁 | ADB 防护 | 入侵照片 |
@@ -36,8 +51,8 @@
 ### 构建
 
 ```bash
-git clone https://github.com/hnpdsyn/PhoneGuard.git
-cd PhoneGuard
+git clone https://github.com/hnpdsyn/PhoneGuard1.git
+cd PhoneGuard1
 ./gradlew assembleDebug
 ```
 

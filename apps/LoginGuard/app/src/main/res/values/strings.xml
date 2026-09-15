@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">登录保护</string>
+
+    <!-- 设备管理器在系统激活界面展示的名称与说明（v1.1 新增） -->
+    <string name="admin_receiver_label">登录保护 - 设备管理器</string>
+    <string name="admin_receiver_description">用于监听锁屏密码连续输错，并在检测到暴力破解时自动锁屏保护设备。仅申请「强制锁屏」权限，不读取任何设备数据。</string>
+</resources>

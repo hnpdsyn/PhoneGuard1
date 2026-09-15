@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LoginGuard 设备管理器策略声明（v1.1 新增）
+     仅申请 force-lock（强制锁屏）：用于检测到暴力破解时 DevicePolicyManager.lockNow() 自动锁机
+     reset-password 等高危策略一律不申请，最小化权限 -->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <force-lock />
+    </uses-policies>
+</device-admin>

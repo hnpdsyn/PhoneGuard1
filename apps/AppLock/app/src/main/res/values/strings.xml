@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">应用锁大师</string>
+    <string name="accessibility_service_description">用于实时检测前台应用变化，为受保护应用提供锁定功能</string>
+    <string name="disguise_label_calculator">计算器</string>
+    <string name="disguise_label_notes">备忘录</string>
+</resources>

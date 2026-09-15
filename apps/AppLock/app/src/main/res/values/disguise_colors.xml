@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 伪装图标背景色：计算器深蓝灰 / 备忘录琥珀黄 -->
+    <color name="ic_disguise_calculator_background">#37474F</color>
+    <color name="ic_disguise_notes_background">#F9A825</color>
+</resources>

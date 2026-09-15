@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <files-path name="logs" path="logs/" />
+    <files-path name="exports" path="exports/" />
+    <external-files-path name="external_logs" path="logs/" />
+    <external-files-path name="external_exports" path="exports/" />
+</paths>
