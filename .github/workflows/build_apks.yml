@@ -24,7 +24,7 @@ jobs:
       - name: Build 5 APKs
         run: |
           set -e
-          for p in SimGuard AdbGuard LoginGuard AppLock "Intrusion/Intrusion"; do
+          for p in SimGuard AdbGuard LoginGuard AppLock "Intrusion"; do
             name=$(basename "$p")
             echo "=== Building $name ==="
             (cd "apps/$p" && gradle assembleRelease --no-daemon -x lint -x lintVitalRelease)
