@@ -7,6 +7,7 @@ import android.content.SharedPreferences
  * 配置管理中心（ADB防护精简版）
  * 仅保留：ADB防护开关、自动提醒关闭、自动拍照取证、WiFi IP监控、授权白名单
  * v1.1 新增：USB插拔告警、无线调试告警、开发者选项监控、拍照水印、TTS语音告警
+ * v1.2 新增：入侵短信告警（紧急号码 + 开关）
  */
 class ConfigManager(context: Context) {
 
@@ -56,6 +57,15 @@ class ConfigManager(context: Context) {
         get() = prefs.getBoolean(KEY_TTS_ALERT_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_TTS_ALERT_ENABLED, value).apply()
 
+    // ========== v1.2 入侵短信告警 ==========
+    var smsAlertEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SMS_ALERT_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_SMS_ALERT_ENABLED, value).apply()
+
+    var smsAlertPhone: String
+        get() = prefs.getString(KEY_SMS_ALERT_PHONE, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_SMS_ALERT_PHONE, value).apply()
+
     // ========== 授权白名单 ==========
     var adbWhitelist: Set<String>
         get() = prefs.getStringSet(KEY_ADB_WHITELIST, emptySet()) ?: emptySet()
@@ -73,5 +83,7 @@ class ConfigManager(context: Context) {
         private const val KEY_DEV_OPTIONS_ALERT_ENABLED = "dev_options_alert_enabled"
         private const val KEY_WATERMARK_ENABLED = "watermark_enabled"
         private const val KEY_TTS_ALERT_ENABLED = "tts_alert_enabled"
+        private const val KEY_SMS_ALERT_ENABLED = "sms_alert_enabled"
+        private const val KEY_SMS_ALERT_PHONE = "sms_alert_phone"
     }
 }

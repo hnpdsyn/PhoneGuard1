@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- 密码错误拍照取证 -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 入侵告警短信 -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- 摄像头特性声明 -->

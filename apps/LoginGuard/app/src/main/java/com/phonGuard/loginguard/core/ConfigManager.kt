@@ -41,6 +41,15 @@ class ConfigManager(context: Context) {
         get() = prefs.getBoolean(KEY_TTS_ALERT_ENABLED, true)
         set(value) = prefs.edit().putBoolean(KEY_TTS_ALERT_ENABLED, value).apply()
 
+    // ========== 入侵短信告警（v1.2 新增） ==========
+    var smsAlertEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SMS_ALERT_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_SMS_ALERT_ENABLED, value).apply()
+
+    var smsAlertPhone: String
+        get() = prefs.getString(KEY_SMS_ALERT_PHONE, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_SMS_ALERT_PHONE, value).apply()
+
     // Key常量
     companion object {
         private const val KEY_LOGIN_GUARD_ENABLED = "login_guard_enabled"
@@ -48,5 +57,7 @@ class ConfigManager(context: Context) {
         private const val KEY_CAPTURE_ENABLED = "capture_enabled"
         private const val KEY_PHOTO_CAPTURE_THRESHOLD = "photo_capture_threshold"
         private const val KEY_TTS_ALERT_ENABLED = "tts_alert_enabled"
+        private const val KEY_SMS_ALERT_ENABLED = "sms_alert_enabled"
+        private const val KEY_SMS_ALERT_PHONE = "sms_alert_phone"
     }
 }

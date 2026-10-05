@@ -1,6 +1,10 @@
 package com.phonGuard.simguard.ui.screens
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -12,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.phonGuard.simguard.SimGuardApp
 import com.phonGuard.simguard.service.SimGuardService
 
@@ -28,6 +33,11 @@ fun SimGuardScreen(onOpenLog: () -> Unit = {}) {
     var enabled by remember { mutableStateOf(config.simGuardEnabled) }
     var alertPhone by remember { mutableStateOf(config.simAlertPhone) }
     var isBound by remember { mutableStateOf(config.simBoundIccid.isNotEmpty()) }
+    // v1.1：SEND_SMS 运行时权限状态（危险权限，需动态申请）
+    var smsGranted by remember { mutableStateOf(hasSmsPermission(context)) }
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> smsGranted = granted }
 
     LazyColumn(
         modifier = Modifier
@@ -163,6 +173,38 @@ fun SimGuardScreen(onOpenLog: () -> Unit = {}) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // v1.1：短信权限状态与一键授权入口
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            if (smsGranted) Icons.Default.CheckCircle else Icons.Default.SmsFailed,
+                            contentDescription = null,
+                            tint = if (smsGranted) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            if (smsGranted) "短信权限已授权，换卡后自动发告警"
+                            else "未授权短信权限，换卡后无法发告警",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!smsGranted) {
+                            Button(onClick = {
+                                smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
+                            }) {
+                                Text("授权发短信")
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "提示：告警短信经手机当前SIM卡发出。换卡场景下即经对方SIM卡发出，可获知对方号码",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    )
                 }
             }
         }
@@ -193,3 +235,9 @@ fun SimGuardScreen(onOpenLog: () -> Unit = {}) {
         }
     }
 }
+
+/** SEND_SMS 为危险权限，需运行时动态申请 */
+private fun hasSmsPermission(context: android.content.Context): Boolean =
+    ContextCompat.checkSelfPermission(
+        context, Manifest.permission.SEND_SMS
+    ) == PackageManager.PERMISSION_GRANTED

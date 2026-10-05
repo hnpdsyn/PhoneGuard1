@@ -5,6 +5,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
 import com.phonGuard.loginguard.LoginGuardApp
+import com.phonGuard.loginguard.core.SmsAlertHelper
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 
 /**
@@ -123,6 +125,26 @@ object BreachManager {
             if (now - lastPhoto > PHOTO_THROTTLE_MS) {
                 prefs.edit().putLong(KEY_LAST_PHOTO_TIME, now).apply()
                 PhotoCapture.captureIntruderPhoto(context)
+            }
+        }
+
+        // 入侵短信告警（v1.2 新增）：达到拍照阈值时向紧急号码发短信（Helper内部10分钟节流）
+        if (config.smsAlertEnabled && failedCount >= config.photoCaptureThreshold) {
+            SmsAlertHelper.sendIfNeeded(
+                context, config.smsAlertPhone,
+                "【PhoneGuard】暴力破解警报！您的手机锁屏密码已连续输错 $failedCount 次，" +
+                        "设备：${android.os.Build.MODEL}，时间：${SmsAlertHelper.nowText()}。已自动拍照取证并锁定，请立即检查！"
+            ) { msg ->
+                runBlocking {
+                    logger.logEvent(
+                        SecurityLogger.SecurityEvent(
+                            type = "login",
+                            subType = "sms_alert",
+                            message = msg,
+                            severity = 1
+                        )
+                    )
+                }
             }
         }
 

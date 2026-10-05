@@ -1,10 +1,14 @@
 package com.phonGuard.adbguard.core
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.telephony.SmsManager
+import androidx.core.content.ContextCompat
 import com.phonGuard.adbguard.AdbGuardApp
 import com.phonGuard.adbguard.service.AdbGuardService
 import kotlinx.coroutines.runBlocking
@@ -92,6 +96,9 @@ object UsbAlertHelper {
             )
         }
 
+        // v1.2：插入时向紧急号码发送告警短信（内部自带开关/权限/节流判断）
+        sendSmsAlertIfNeeded(context, deviceName, attached)
+
         // 插入时若开启自动拍照且防火墙在运行，拉起服务拍照取证（相机与前台状态由服务持有）
         if (attached && config.adbTakePhoto && config.adbGuardEnabled &&
             PermissionManager.hasCameraPermission(context)
@@ -105,5 +112,61 @@ object UsbAlertHelper {
             } catch (_: Exception) { }
         }
         return true
+    }
+
+    /** v1.2：短信告警节流（USB插拔/充电线插拔频繁，10分钟内最多发1条） */
+    private var lastSmsAt = 0L
+    private const val SMS_INTERVAL_MS = 10 * 60 * 1000L
+
+    /**
+     * v1.2：USB设备接入时向紧急号码发送告警短信
+     * 条件：开关开启 + 号码非空 + 已授权SEND_SMS + 仅ATTACHED事件 + 10分钟节流
+     */
+    private fun sendSmsAlertIfNeeded(context: Context, deviceName: String, attached: Boolean) {
+        if (!attached) return
+        val app = context.applicationContext as AdbGuardApp
+        if (!app.configManager.smsAlertEnabled) return
+        val phone = app.configManager.smsAlertPhone.trim()
+        if (phone.isEmpty()) return
+        // SEND_SMS 为危险权限，未授权时静默跳过
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS)
+            != PackageManager.PERMISSION_GRANTED
+        ) return
+        val now = System.currentTimeMillis()
+        if (now - lastSmsAt < SMS_INTERVAL_MS) return
+        lastSmsAt = now
+
+        Thread {
+            try {
+                val sm: SmsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    context.getSystemService(SmsManager::class.java) ?: return@Thread
+                } else {
+                    @Suppress("DEPRECATION")
+                    SmsManager.getDefault()
+                }
+                val time = java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
+                    .format(java.util.Date())
+                val body = "【PhoneGuard】您的手机接入USB设备「$deviceName」，时间：$time。" +
+                        "若非本人操作，设备可能正被ADB入侵，App已自动拍照取证，请立即检查手机。"
+                val parts = sm.divideMessage(body)
+                if (parts.size <= 1) {
+                    sm.sendTextMessage(phone, null, body, null, null)
+                } else {
+                    sm.sendMultipartTextMessage(phone, null, parts, null, null)
+                }
+                try {
+                    runBlocking {
+                        app.securityLogger.logEvent(
+                            SecurityLogger.SecurityEvent(
+                                type = "usb",
+                                subType = "sms_alert",
+                                message = "已向 $phone 提交USB接入告警短信",
+                                severity = 1
+                            )
+                        )
+                    }
+                } catch (_: Exception) { }
+            } catch (_: Exception) { }
+        }.start()
     }
 }

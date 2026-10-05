@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- SIM卡检测 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!-- 换卡告警短信 -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
 
     <!-- 电话特性声明 -->
     <uses-feature android:name="android.hardware.telephony" android:required="false" />

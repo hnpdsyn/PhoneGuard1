@@ -2,6 +2,7 @@ package com.phonGuard.adbguard.ui.screens
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.phonGuard.adbguard.AdbGuardApp
 import com.phonGuard.adbguard.core.PermissionManager
 import com.phonGuard.adbguard.service.AdbGuardService
@@ -42,6 +44,18 @@ fun AdbGuardScreen(
     var devOptionsAlert by remember { mutableStateOf(config.devOptionsAlertEnabled) }
     var watermarkEnabled by remember { mutableStateOf(config.watermarkEnabled) }
     var ttsAlert by remember { mutableStateOf(config.ttsAlertEnabled) }
+    // v1.2：入侵短信告警
+    var smsAlert by remember { mutableStateOf(config.smsAlertEnabled) }
+    var smsPhone by remember { mutableStateOf(config.smsAlertPhone) }
+    var smsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS)
+                    == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted -> smsGranted = granted }
     var showWhitelistDialog by remember { mutableStateOf(false) }
     var whitelist by remember { mutableStateOf(config.adbWhitelist.toList()) }
     var testPhotoStatus by remember { mutableStateOf<String?>(null) }
@@ -247,6 +261,67 @@ fun AdbGuardScreen(
                             }
                         )
                     }
+                }
+            }
+        }
+
+        // ===== 设置项：v1.2 入侵短信告警 =====
+        item {
+            Card {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("入侵短信告警", fontWeight = FontWeight.Medium)
+                            Text(
+                                "USB设备接入时向紧急号码发告警短信，短信账单可暴露入侵者号码",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                        Switch(
+                            checked = smsAlert,
+                            onCheckedChange = {
+                                smsAlert = it
+                                config.smsAlertEnabled = it
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = smsPhone,
+                        onValueChange = {
+                            smsPhone = it
+                            config.smsAlertPhone = it
+                        },
+                        placeholder = { Text("紧急号码（建议填机主本人手机号）") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            if (smsGranted) "已授权短信权限" else "未授权短信权限",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!smsGranted) {
+                            Button(onClick = {
+                                smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
+                            }) {
+                                Text("授权发短信")
+                            }
+                        }
+                    }
+                    Text(
+                        "10分钟内最多发送1条，避免插拔充电线刷屏",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    )
                 }
             }
         }

@@ -18,6 +18,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import com.phonGuard.intrusion.IntrusionApp
 import com.phonGuard.intrusion.core.NotificationHelper
+import com.phonGuard.intrusion.core.SmsAlertHelper
 import com.phonGuard.intrusion.core.SecurityLogger
 import kotlinx.coroutines.*
 import java.io.File
@@ -179,6 +180,16 @@ class IntrusionDetectorService : Service() {
 
         // 5. 记录日志
         logEvent("intrusion", "alert_sent", "入侵告警通知已发送$locationMsg")
+
+        // 6. 入侵短信告警（v1.1 新增）：向紧急号码发短信，含设备与位置信息（Helper内部10分钟节流）
+        if (config.smsAlertEnabled) {
+            val smsBody = "【PhoneGuard】入侵警报！您的手机连续多次解锁失败，设备：${Build.MODEL}，" +
+                    "时间：${SmsAlertHelper.nowText()}。已自动拍照取证，请立即检查！" +
+                    (locationInfo?.let { " 位置：$it" } ?: "")
+            SmsAlertHelper.sendIfNeeded(this, config.smsAlertPhone, smsBody) { msg ->
+                logEvent("intrusion", "sms_alert", msg)
+            }
+        }
     }
 
     private suspend fun captureIntruderPhoto() {

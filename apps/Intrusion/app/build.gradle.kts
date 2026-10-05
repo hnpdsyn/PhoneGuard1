@@ -4,6 +4,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        create("pg") {
+            storeFile = file("../pg_release.keystore")
+            storePassword = "phoneguard2026"
+            keyAlias = "phoneguard"
+            keyPassword = "phoneguard2026"
+        }
+    }
     namespace = "com.phonGuard.intrusion"
     compileSdk = 34
 
@@ -11,8 +19,8 @@ android {
         applicationId = "com.phonGuard.intrusion"
         minSdk = 28
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -21,8 +29,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("pg")
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -37,7 +46,7 @@ android {
     applicationVariants.all {
         outputs.all {
             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "Intrusion_v1.0.apk"
+            output.outputFileName = "Intrusion_v1.1.apk"
         }
     }
 

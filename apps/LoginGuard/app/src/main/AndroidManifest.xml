@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- 前置摄像头静默取证（v1.1 新增，运行时需用户授权；本应用无需 INTERNET 权限） -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 入侵告警短信 -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
 
     <application
         android:name=".LoginGuardApp"

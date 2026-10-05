@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import com.phonGuard.intrusion.IntrusionApp
 import com.phonGuard.intrusion.core.PermissionManager
 import com.phonGuard.intrusion.service.IntrusionDetectorService
@@ -35,6 +37,19 @@ fun IntrusionScreen(onOpenLog: () -> Unit = {}) {
     var trackLocation by remember { mutableStateOf(config.intrusionTrackLocation) }
     var playAlarm by remember { mutableStateOf(config.intrusionPlayAlarm) }
     var testStatus by remember { mutableStateOf<String?>(null) }
+
+    // 入侵短信告警状态
+    var smsAlert by remember { mutableStateOf(config.smsAlertEnabled) }
+    var smsPhone by remember { mutableStateOf(config.smsAlertPhone) }
+    var smsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS)
+                    == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted -> smsGranted = granted }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -223,6 +238,67 @@ fun IntrusionScreen(onOpenLog: () -> Unit = {}) {
                             }
                         )
                     }
+                }
+            }
+        }
+
+        // ===== 入侵短信告警（v1.1） =====
+        item {
+            Card {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("入侵短信告警", fontWeight = FontWeight.Medium)
+                            Text(
+                                "触发入侵防护时向紧急号码发短信，含设备与位置信息",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                        Switch(
+                            checked = smsAlert,
+                            onCheckedChange = {
+                                smsAlert = it
+                                config.smsAlertEnabled = it
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = smsPhone,
+                        onValueChange = {
+                            smsPhone = it
+                            config.smsAlertPhone = it
+                        },
+                        placeholder = { Text("紧急号码（建议填机主本人手机号）") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            if (smsGranted) "已授权短信权限" else "未授权短信权限",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!smsGranted) {
+                            Button(onClick = {
+                                smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
+                            }) {
+                                Text("授权发短信")
+                            }
+                        }
+                    }
+                    Text(
+                        "10分钟内最多发送1条，避免反复触发刷屏",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    )
                 }
             }
         }

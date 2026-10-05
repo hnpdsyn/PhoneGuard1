@@ -1,5 +1,7 @@
 package com.phonGuard.loginguard.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
@@ -15,6 +17,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.phonGuard.loginguard.LoginGuardApp
@@ -51,6 +56,19 @@ fun LoginGuardScreen(
     // 攻击计数状态（展示用，来自持久化存储）
     var failedCount by remember { mutableStateOf(BreachManager.getFailedCount(context)) }
     var escalationLevel by remember { mutableStateOf(BreachManager.getEscalationLevel(context)) }
+
+    // 入侵短信告警状态
+    var smsAlert by remember { mutableStateOf(config.smsAlertEnabled) }
+    var smsPhone by remember { mutableStateOf(config.smsAlertPhone) }
+    var smsGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS)
+                    == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val smsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted -> smsGranted = granted }
 
     // 从系统设备管理器激活页返回时自动刷新激活状态与计数
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -244,6 +262,56 @@ fun LoginGuardScreen(
                     config.ttsAlertEnabled = it
                 }
             )
+        }
+
+        // ===== 入侵短信告警（v1.2） =====
+        item {
+            SwitchRow(
+                title = "入侵短信告警",
+                subtitle = "密码连续输错达到拍照阈值时，向紧急号码发送告警短信",
+                checked = smsAlert,
+                onCheckedChange = {
+                    smsAlert = it
+                    config.smsAlertEnabled = it
+                }
+            )
+        }
+        item {
+            Card {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    OutlinedTextField(
+                        value = smsPhone,
+                        onValueChange = {
+                            smsPhone = it
+                            config.smsAlertPhone = it
+                        },
+                        label = { Text("紧急号码（建议填机主本人手机号）") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            if (smsGranted) "已授权短信权限" else "未授权短信权限",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (!smsGranted) {
+                            Button(onClick = {
+                                smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
+                            }) {
+                                Text("授权发短信")
+                            }
+                        }
+                    }
+                    Text(
+                        "10分钟内最多发送1条，避免反复触发刷屏",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    )
+                }
+            }
         }
 
         // ===== 防护机制说明 =====

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import com.phonGuard.applock.AppLockApp
+import com.phonGuard.applock.core.SmsAlertHelper
 import com.phonGuard.applock.service.AppLockAccessibilityService
 import com.phonGuard.applock.ui.theme.AppLockTheme
 import java.io.File
@@ -92,6 +93,19 @@ class LockVerifyActivity : ComponentActivity() {
             return
         }
         capturePhotoInternal()
+        // 入侵短信告警（v1.2 新增）：密码输错时向紧急号码发短信（Helper内部10分钟节流）
+        sendSmsAlertIfNeeded()
+    }
+
+    /** 入侵短信告警（v1.2 新增） */
+    private fun sendSmsAlertIfNeeded() {
+        val config = AppLockApp.instance.configManager
+        if (!config.smsAlertEnabled) return
+        SmsAlertHelper.sendIfNeeded(
+            this, config.smsAlertPhone,
+            "【PhoneGuard】应用锁告警！有人正在您的手机上输错密码试图解锁应用，" +
+                    "设备：${android.os.Build.MODEL}，时间：${SmsAlertHelper.nowText()}。已自动拍照取证，请立即检查！"
+        )
     }
 
     /** 实际拍照逻辑 - 使用旧Camera API，前置摄像头 */

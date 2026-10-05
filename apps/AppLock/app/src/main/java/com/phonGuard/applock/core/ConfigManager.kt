@@ -68,6 +68,16 @@ class ConfigManager(context: Context) {
         get() = prefs.getBoolean(KEY_FAKE_CRASH_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_FAKE_CRASH_ENABLED, value).apply()
 
+    // ========== 入侵短信告警（v1.2 新增） ==========
+    var smsAlertEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SMS_ALERT_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(KEY_SMS_ALERT_ENABLED, value).apply()
+
+    /** 紧急号码（加密存储） */
+    var smsAlertPhone: String
+        get() = securePrefs.getString(KEY_SMS_ALERT_PHONE, "") ?: ""
+        set(value) = securePrefs.edit().putString(KEY_SMS_ALERT_PHONE, value).apply()
+
     // Key常量
     companion object {
         private const val KEY_MASTER_PIN = "master_pin"
@@ -79,6 +89,8 @@ class ConfigManager(context: Context) {
         private const val KEY_DISGUISE_MODE = "disguise_mode"
         private const val KEY_VAULT_ENABLED = "vault_enabled"
         private const val KEY_FAKE_CRASH_ENABLED = "fake_crash_enabled"
+        private const val KEY_SMS_ALERT_ENABLED = "sms_alert_enabled"
+        private const val KEY_SMS_ALERT_PHONE = "sms_alert_phone"
 
         // 伪装模式常量
         const val DISGUISE_NONE = 0

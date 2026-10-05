@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- ADB拍照取证 -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 入侵告警短信 -->
+    <uses-permission android:name="android.permission.SEND_SMS" />
 
     <!-- 摄像头特性声明 -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
