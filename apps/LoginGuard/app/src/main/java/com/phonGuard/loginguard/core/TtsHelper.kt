@@ -32,25 +32,30 @@ object TtsHelper {
 
         // 切到主线程创建 TextToSpeech（构造函数需要 Looper）
         Handler(Looper.getMainLooper()).post {
+            // created 供初始化回调与进度监听器安全引用实例（避免在 val 初始化表达式内引用自身）
+            var created: TextToSpeech? = null
             try {
                 val tts = TextToSpeech(appContext) { status ->
+                    val t = created ?: return@TextToSpeech
                     try {
                         if (status == TextToSpeech.SUCCESS) {
                             // 置为中文（设置失败不影响播报，TTS 会使用默认语言）
                             try {
-                                tts.language = Locale.CHINA
+                                t.language = Locale.CHINA
                             } catch (_: Throwable) { }
-                            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "loginguard_alert")
+                            t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "loginguard_alert")
                         } else {
                             // 初始化失败：静默降级
-                            release(tts)
+                            release(t)
                         }
                     } catch (_: Throwable) {
-                        release(tts)
+                        release(t)
                     }
                 }
+                created = tts
                 // 播报完成后释放资源
                 tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) { }
                     override fun onDone(utteranceId: String?) = release(tts)
                     override fun onError(utteranceId: String?) = release(tts)
                 })
@@ -60,7 +65,7 @@ object TtsHelper {
                 }, FALLBACK_RELEASE_MS)
             } catch (_: Throwable) {
                 // 设备无 TTS 引擎等异常：静默降级
-                speaking.set(false)
+                release(created)
             }
         }
     }

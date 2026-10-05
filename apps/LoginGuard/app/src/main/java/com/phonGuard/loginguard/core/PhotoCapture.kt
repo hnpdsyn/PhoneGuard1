@@ -3,6 +3,7 @@
 package com.phonGuard.loginguard.core
 
 import android.Manifest
+import kotlinx.coroutines.runBlocking
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -211,6 +212,7 @@ object PhotoCapture {
     private fun logEvent(context: Context, subType: String, message: String) {
         try {
             val logger = (context.applicationContext as? LoginGuardApp)?.securityLogger ?: return
+            runBlocking {
             logger.logEvent(
                 SecurityLogger.SecurityEvent(
                     type = "login",
@@ -218,7 +220,7 @@ object PhotoCapture {
                     message = message,
                     severity = if (subType == "photo_captured") 2 else 1
                 )
-            )
+            ) }
         } catch (_: Throwable) { }
     }
 }

@@ -105,6 +105,7 @@ object BreachManager {
         // 事件时间线：密码输错
         val sourceLabel = if (source == "锁屏密码") "检测到锁屏密码输错" else "检测到登录失败（来源: $source）"
         val sysPart = if (systemFailedAttempts >= 0) "，系统计数 $systemFailedAttempts" else ""
+        runBlocking {
         logger.logEvent(
             SecurityLogger.SecurityEvent(
                 type = "login",
@@ -117,7 +118,7 @@ object BreachManager {
                     put("source", source)
                 }
             )
-        )
+        ) }
 
         // 达到拍照阈值 → 前置摄像头静默取证（子线程执行，内部自带节流与静默降级）
         if (config.captureEnabled && failedCount >= config.photoCaptureThreshold) {
@@ -186,6 +187,7 @@ object BreachManager {
         } catch (_: Throwable) { }
 
         // 事件时间线：自动锁机
+        runBlocking {
         logger.logEvent(
             SecurityLogger.SecurityEvent(
                 type = "login",
@@ -202,7 +204,7 @@ object BreachManager {
                     put("locked", locked)
                 }
             )
-        )
+        ) }
 
         // 告警通知（点击跳转事件时间线）
         NotificationHelper.sendAlertNotification(
@@ -239,6 +241,7 @@ object BreachManager {
             .apply()
 
         if (hadAttackState) {
+            runBlocking {
             app.securityLogger.logEvent(
                 SecurityLogger.SecurityEvent(
                     type = "login",
@@ -247,7 +250,7 @@ object BreachManager {
                     severity = 0,
                     details = JSONObject().apply { put("recovered", true) }
                 )
-            )
+            ) }
         }
     }
 }
