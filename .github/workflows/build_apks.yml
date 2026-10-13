@@ -3,6 +3,9 @@ name: Build PhoneGuard APKs
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,7 +35,20 @@ jobs:
           echo "=== APK 产物 ==="
           find apps -path '*outputs/apk/release/*.apk' -exec ls -la {} \;
 
-      - name: Upload APKs
+      - name: Upload to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view v1.2-sms-alert -R hnpdsyn/PhoneGuard1 >/dev/null 2>&1 || \
+            gh release create v1.2-sms-alert -R hnpdsyn/PhoneGuard1 \
+              --title "PhoneGuard v1.1/v1.2 入侵短信告警版" \
+              --notes "5 个 App 升级版，全部新增入侵短信告警。⚠️ 需先卸载旧版再安装（签名更换）。"
+          find apps -path '*outputs/apk/release/*.apk' -name '*.apk' | while read f; do
+            echo "Uploading $(basename "$f")"
+            gh release upload v1.2-sms-alert "$f" -R hnpdsyn/PhoneGuard1 --clobber
+          done
+
+      - name: Upload APKs (artifact)
         uses: actions/upload-artifact@v4
         with:
           name: phoneguard-apks
