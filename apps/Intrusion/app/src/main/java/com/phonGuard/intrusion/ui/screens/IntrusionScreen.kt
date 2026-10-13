@@ -57,6 +57,23 @@ fun IntrusionScreen(onOpenLog: () -> Unit = {}) {
         testStatus = if (granted) "相机权限已获取" else "❌ 相机权限被拒绝"
     }
 
+    // Android 14: camera 类型前台服务启动前必须已持有相机权限，否则系统直接抛 SecurityException
+    var pendingEnable by remember { mutableStateOf(false) }
+    val cameraEnableLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted && pendingEnable) {
+            pendingEnable = false
+            enabled = true
+            config.intrusionEnabled = true
+            context.startForegroundService(
+                Intent(context, IntrusionDetectorService::class.java)
+            )
+        } else if (!granted) {
+            testStatus = "需要相机权限才能开启拍照取证"
+        }
+    }
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { result ->
@@ -98,17 +115,25 @@ fun IntrusionScreen(onOpenLog: () -> Unit = {}) {
                         }
                         Switch(
                             checked = enabled,
-                            onCheckedChange = {
-                                enabled = it
-                                config.intrusionEnabled = it
-                                if (it) {
-                                    context.startForegroundService(
-                                        Intent(context, IntrusionDetectorService::class.java)
-                                    )
+                            onCheckedChange = { want ->
+                                if (want && ContextCompat.checkSelfPermission(
+                                        context, Manifest.permission.CAMERA
+                                    ) != PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    pendingEnable = true
+                                    cameraEnableLauncher.launch(Manifest.permission.CAMERA)
                                 } else {
-                                    context.stopService(
-                                        Intent(context, IntrusionDetectorService::class.java)
-                                    )
+                                    enabled = want
+                                    config.intrusionEnabled = want
+                                    if (want) {
+                                        context.startForegroundService(
+                                            Intent(context, IntrusionDetectorService::class.java)
+                                        )
+                                    } else {
+                                        context.stopService(
+                                            Intent(context, IntrusionDetectorService::class.java)
+                                        )
+                                    }
                                 }
                             }
                         )

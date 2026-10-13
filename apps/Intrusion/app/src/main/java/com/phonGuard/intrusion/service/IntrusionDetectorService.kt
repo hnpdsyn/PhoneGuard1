@@ -91,7 +91,13 @@ class IntrusionDetectorService : Service() {
             "入侵检测已开启",
             "正在监控异常解锁行为"
         )
-        startForeground(NOTIFICATION_ID, notification)
+        try {
+            startForeground(NOTIFICATION_ID, notification)
+        } catch (e: Exception) {
+            // Android 14: camera 类型 FGS 在相机权限缺失时会抛 SecurityException，兜底防闪退
+            android.util.Log.e("IntrusionDetector", "startForeground failed", e)
+            stopSelf()
+        }
     }
 
     private fun registerScreenReceiver() {

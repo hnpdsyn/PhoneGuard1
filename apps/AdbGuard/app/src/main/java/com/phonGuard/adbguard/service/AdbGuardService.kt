@@ -108,7 +108,13 @@ class AdbGuardService : Service() {
             "ADB防火墙已开启",
             "正在监控ADB连接状态"
         )
-        startForeground(NOTIFICATION_ID, notification)
+        try {
+            startForeground(NOTIFICATION_ID, notification)
+        } catch (e: Exception) {
+            // Android 14: camera|specialUse 类型 FGS 在相机权限缺失时会抛 SecurityException，兜底防闪退
+            android.util.Log.e("AdbGuardService", "startForeground failed", e)
+            stopSelf()
+        }
     }
 
     private fun startMonitoring() {
