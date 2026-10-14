@@ -19,10 +19,19 @@ android {
         }
     }
 
+    signingConfigs {
+        create("pg") {
+            storeFile = file("../pg_release.keystore")
+            storePassword = "phoneguard2026"
+            keyAlias = "phoneguard"
+            keyPassword = "phoneguard2026"
+        }
+    }
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("pg")
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
