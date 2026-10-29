@@ -46,7 +46,7 @@ android {
     applicationVariants.all {
         outputs.all {
             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = "AppLock_v1.2.apk"
+            output.outputFileName = "AppLock_v1.3.apk"
         }
     }
 
