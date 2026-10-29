@@ -202,6 +202,82 @@ fun AppLockScreen() {
                         supportingText = { Text("连续输错此次数后提示稍后再试，建议3-10次") }
                     )
 
+                    // ===== 主密码 =====
+                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+                    var showPinDialog by remember { mutableStateOf(false) }
+                    val isDefaultPin = config.masterPin == "1234"
+                    Text("主密码", fontWeight = FontWeight.Medium)
+                    Text(
+                        if (isDefaultPin) "当前使用默认密码 1234，建议立即修改"
+                        else "主密码已自定义（锁应用与伪装界面共用）",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isDefaultPin) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Button(onClick = { showPinDialog = true }) {
+                        Text("修改主密码")
+                    }
+                    if (showPinDialog) {
+                        var newPin by remember { mutableStateOf("") }
+                        var confirmPin by remember { mutableStateOf("") }
+                        var pinError by remember { mutableStateOf<String?>(null) }
+                        AlertDialog(
+                            onDismissRequest = { showPinDialog = false },
+                            title = { Text("修改主密码") },
+                            text = {
+                                Column {
+                                    Text(
+                                        "4-8位数字，锁应用验证与伪装界面进入密码会同步更新",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    OutlinedTextField(
+                                        value = newPin,
+                                        onValueChange = { newPin = it.filter { c -> c.isDigit() }.take(8) },
+                                        label = { Text("新密码") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    OutlinedTextField(
+                                        value = confirmPin,
+                                        onValueChange = { confirmPin = it.filter { c -> c.isDigit() }.take(8) },
+                                        label = { Text("确认新密码") },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        singleLine = true,
+                                        isError = pinError != null,
+                                        supportingText = {
+                                            pinError?.let {
+                                                Text(it, color = MaterialTheme.colorScheme.error)
+                                            }
+                                        }
+                                    )
+                                }
+                            },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    when {
+                                        newPin.length < 4 -> pinError = "密码至少4位数字"
+                                        confirmPin != newPin -> pinError = "两次输入不一致"
+                                        else -> {
+                                            config.masterPin = newPin
+                                            showPinDialog = false
+                                            Toast.makeText(
+                                                context,
+                                                "主密码已修改，请牢记新密码",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }) { Text("保存") }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showPinDialog = false }) { Text("取消") }
+                            }
+                        )
+                    }
+
                     // ===== 图标伪装 =====
                     Divider(modifier = Modifier.padding(vertical = 12.dp))
                     var disguiseMode by remember { mutableStateOf(config.disguiseMode) }
